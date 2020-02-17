@@ -1,8 +1,13 @@
 package com.ahanafi.id.myfavoritemovieapp.database
 
+import android.net.Uri
 import android.provider.BaseColumns
 
-internal class DatabaseContract {
+object DatabaseContract {
+
+    const val AUTHORITY = "com.ahanafi.id.myfavoritemovieapp"
+    const val SCHEME = "content"
+
     internal class MyMovieColumns : BaseColumns {
         companion object {
             const val TABLE_NAME = "movies"
@@ -12,6 +17,11 @@ internal class DatabaseContract {
             const val RELEASE_DATE = "release_date"
             const val LANGUAGE = "language"
             const val POSTER_PATH = "poster_path"
+
+            val CONTENT_URI : Uri = Uri.Builder().scheme(SCHEME)
+                .authority(AUTHORITY)
+                .appendPath(TABLE_NAME)
+                .build()
         }
     }
 
@@ -24,6 +34,11 @@ internal class DatabaseContract {
             const val RELEASE_DATE = "release_date"
             const val LANGUAGE = "language"
             const val POSTER_PATH = "poster_path"
+
+            val CONTENT_URI : Uri = Uri.Builder().scheme(SCHEME)
+                .authority(AUTHORITY)
+                .appendPath(TABLE_NAME)
+                .build()
         }
     }
 }

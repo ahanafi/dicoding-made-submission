@@ -6,7 +6,6 @@ import androidx.fragment.app.Fragment
 import androidx.viewpager.widget.ViewPager
 import com.ahanafi.id.myfavoritemovieapp.R
 import com.ahanafi.id.myfavoritemovieapp.adapters.FavoritePagerAdapter
-import com.ahanafi.id.myfavoritemovieapp.adapters.TvShowFavoriteAdapter
 import com.ahanafi.id.myfavoritemovieapp.fragments.movie.MovieFavoriteFragment
 import com.ahanafi.id.myfavoritemovieapp.fragments.tvshow.TvShowFavoriteFragment
 import com.google.android.material.tabs.TabLayout

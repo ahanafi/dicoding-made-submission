@@ -9,7 +9,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ahanafi.id.myfavoritemovieapp.R
-import com.ahanafi.id.myfavoritemovieapp.adapters.TvShowAdapter
+import com.ahanafi.id.myfavoritemovieapp.adapters.tvshow.TvShowAdapter
 import com.ahanafi.id.myfavoritemovieapp.viewmodels.TvShowViewModel
 
 class TvShowFragment : Fragment() {
@@ -30,7 +30,8 @@ class TvShowFragment : Fragment() {
         val progressbar : ProgressBar = view.findViewById(R.id.progressbar)
         progressbar.visibility = View.VISIBLE
 
-        val tvShowAdapter = TvShowAdapter()
+        val tvShowAdapter =
+            TvShowAdapter()
         tvShowAdapter.notifyDataSetChanged()
         rvTvShow.layoutManager = LinearLayoutManager(this.context)
         tvShowViewModel = ViewModelProvider(this, ViewModelProvider.NewInstanceFactory()).get(

@@ -60,11 +60,11 @@ class TvShowViewModel : ViewModel() {
 
             override fun onFailure(
                 statusCode: Int,
-                headers: Array<out Header>,
-                responseBody: ByteArray,
-                error: Throwable
+                headers: Array<out Header>?,
+                responseBody: ByteArray?,
+                error: Throwable?
             ) {
-                Log.d("onFailure", error.message.toString())
+                Log.d("onFailure", error?.message.toString())
             }
         })
     }

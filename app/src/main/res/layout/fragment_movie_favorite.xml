@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <TextView
+        <!--<TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="18sp"
@@ -21,15 +21,19 @@
             android:layout_marginRight="16dp"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
-            android:text="@string/favorite_tv_show"
-            />
+            android:text="@string/favorite_movie"
+            />-->
 
-        <ProgressBar
-            android:id="@+id/progressbar_favorite_movie"
-            style="@style/Base.Widget.AppCompat.ProgressBar"
+        <TextView
+            android:id="@+id/tv_nothing_movie"
             android:layout_width="match_parent"
-            android:visibility="gone"
-            android:layout_height="wrap_content" />
+            android:layout_height="400dp"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:textAlignment="center"
+            android:textSize="22sp"
+            android:text="@string/nothing_fav_item"
+            />
 
         <androidx.recyclerview.widget.RecyclerView
             android:layout_gravity="center"
