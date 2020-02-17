@@ -1,6 +1,7 @@
-package com.ahanafi.id.myfavoritemovieapp.adapters
+package com.ahanafi.id.myfavoriteapp.adapters
 
 import android.content.Intent
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,17 +10,16 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.afollestad.materialdialogs.MaterialDialog
-import com.ahanafi.id.myfavoritemovieapp.R
-import com.ahanafi.id.myfavoritemovieapp.details.DetailTvShowActivity
-import com.ahanafi.id.myfavoritemovieapp.helper.TvShowHelper
-import com.ahanafi.id.myfavoritemovieapp.models.TvShow
+import com.ahanafi.id.myfavoriteapp.R
+import com.ahanafi.id.myfavoriteapp.database.DatabaseContract.MyTvShowColumns.Companion.CONTENT_URI
+import com.ahanafi.id.myfavoriteapp.details.DetailTvShowActivity
+import com.ahanafi.id.myfavoriteapp.models.TvShow
 import com.bumptech.glide.Glide
 import kotlinx.android.synthetic.main.item_favorite_tv_show.view.*
 
 class TvShowFavoriteAdapter : RecyclerView.Adapter<TvShowFavoriteAdapter.TvShowFavoriteViewHolder>() {
 
-    private lateinit var tvShowHelper: TvShowHelper
-
+    private lateinit var uriWithId : Uri
     var listFavoriteTvShow = ArrayList<TvShow>()
     set(listFavoriteTvShow){
         if(listFavoriteTvShow.size > 0) {
@@ -48,21 +48,16 @@ class TvShowFavoriteAdapter : RecyclerView.Adapter<TvShowFavoriteAdapter.TvShowF
 
     override fun onBindViewHolder(holder: TvShowFavoriteViewHolder, position: Int) {
         val tvShow = listFavoriteTvShow[position]
+        uriWithId = Uri.parse(CONTENT_URI.toString() + "/" + tvShow.id)
         holder.bind(tvShow)
-        tvShowHelper = TvShowHelper.getInstance(holder.itemView.context.applicationContext)
-        tvShowHelper.open()
         holder.itemView.btn_remove_tv_show.setOnClickListener{
             val dialog = MaterialDialog(holder.itemView.context)
                 .title(R.string.confirm_delete)
                 .message(R.string.confirm_delete_message)
                 .positiveButton(R.string.yes){
-                    val result = tvShowHelper.deleteById(tvShow.id.toString()).toLong()
-                    if (result > 0) {
-                        removeItem(position)
-                        Toast.makeText(holder.itemView.context, R.string.success_deleted_movie, Toast.LENGTH_SHORT).show()
-                    } else {
-                        Toast.makeText(holder.itemView.context, R.string.failed_deleted_movie, Toast.LENGTH_SHORT).show()
-                    }
+                    holder.itemView.context.contentResolver?.delete(uriWithId, null, null)
+                    removeItem(position)
+                    Toast.makeText(holder.itemView.context, R.string.success_deleted_movie, Toast.LENGTH_SHORT).show()
                 }
                 .negativeButton(R.string.cancel){ materialDialog ->
                     materialDialog.cancel()

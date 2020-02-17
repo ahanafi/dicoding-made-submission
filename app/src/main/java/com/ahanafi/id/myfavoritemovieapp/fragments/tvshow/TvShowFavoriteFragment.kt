@@ -1,19 +1,21 @@
 package com.ahanafi.id.myfavoritemovieapp.fragments.tvshow
 
-
+import android.database.ContentObserver
 import android.os.Bundle
-import androidx.fragment.app.Fragment
+import android.os.Handler
+import android.os.HandlerThread
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ahanafi.id.myfavoritemovieapp.R
-import com.ahanafi.id.myfavoritemovieapp.adapters.TvShowFavoriteAdapter
+import com.ahanafi.id.myfavoritemovieapp.adapters.tvshow.TvShowFavoriteAdapter
+import com.ahanafi.id.myfavoritemovieapp.database.DatabaseContract.MyTvShowColumns.Companion.CONTENT_URI
 import com.ahanafi.id.myfavoritemovieapp.helper.MappingHelper
-import com.ahanafi.id.myfavoritemovieapp.helper.TvShowHelper
-import com.google.android.material.snackbar.Snackbar
-import kotlinx.android.synthetic.main.fragment_tv_show_favorite.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
@@ -21,45 +23,56 @@ import kotlinx.coroutines.launch
 
 class TvShowFavoriteFragment : Fragment() {
     private lateinit var favoriteTvShowAdapter: TvShowFavoriteAdapter
-    private lateinit var tvShowHelper: TvShowHelper
+    private lateinit var tvNothing : TextView
+    private lateinit var rvFavoriteTvShow : RecyclerView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_tv_show_favorite, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        tvNothing = view.findViewById(R.id.tv_nothing_tv_show)
+        rvFavoriteTvShow = view.findViewById(R.id.rv_favorite_tv_show)
 
-        rv_favorite_tv_show.setHasFixedSize(true)
-        rv_favorite_tv_show.layoutManager = LinearLayoutManager(this.activity, RecyclerView.HORIZONTAL, isInLayout)
-        favoriteTvShowAdapter = TvShowFavoriteAdapter()
-        rv_favorite_tv_show.adapter = favoriteTvShowAdapter
+        rvFavoriteTvShow.setHasFixedSize(true)
+        rvFavoriteTvShow.layoutManager = LinearLayoutManager(this.activity, RecyclerView.HORIZONTAL, isInLayout)
+        favoriteTvShowAdapter =
+            TvShowFavoriteAdapter()
+        rvFavoriteTvShow.adapter = favoriteTvShowAdapter
 
-        tvShowHelper = TvShowHelper.getInstance(activity!!.applicationContext)
-        tvShowHelper.open()
+        val handlerThread = HandlerThread("DataObserver")
+        handlerThread.start()
+        val handler = Handler(handlerThread.looper)
 
+        val myObserver = object : ContentObserver(handler){
+            override fun onChange(selfChange: Boolean) {
+                loadFavoriteTvSows()
+            }
+        }
+
+        context?.contentResolver?.registerContentObserver(CONTENT_URI, true, myObserver)
         loadFavoriteTvSows()
     }
 
     private fun loadFavoriteTvSows() {
+        Log.d("URI = ", CONTENT_URI.toString())
         GlobalScope.launch(Dispatchers.Main){
-            progressbar_favorite_tv_show.visibility = View.VISIBLE
             val deferredTvShow = async(Dispatchers.IO) {
-                val tvShowCursor = tvShowHelper.queryAll()
+                val tvShowCursor = activity?.contentResolver?.query(CONTENT_URI, null, null, null, null)
                 MappingHelper.mapTvShowCursorToArrayList(tvShowCursor)
             }
             val tvShow = deferredTvShow.await()
-            progressbar_favorite_tv_show.visibility = View.GONE
             if(tvShow.size > 0) {
+                tvNothing.visibility = View.GONE
                 favoriteTvShowAdapter.listFavoriteTvShow = tvShow
-                rv_favorite_tv_show.adapter = favoriteTvShowAdapter
+                rvFavoriteTvShow .adapter = favoriteTvShowAdapter
             } else {
+                tvNothing.visibility = View.VISIBLE
                 favoriteTvShowAdapter.listFavoriteTvShow = ArrayList()
-                Snackbar.make(progressbar_favorite_tv_show, getString(R.string.no_favorite_tv_show), Snackbar.LENGTH_SHORT).show()
             }
         }
     }

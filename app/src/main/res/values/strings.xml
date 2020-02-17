@@ -54,4 +54,7 @@
     <string name="language_setting">Language Setting</string>
     <string name="change_language">Change Language</string>
     <string name="type_keyword">Type keyword here..</string>
+    <string name="nothing_fav_item">Nothing favorite item</string>
+    <string name="item_not_found">Item Not Found</string>
+    <string name="search_result">Searh Result</string>
 </resources>

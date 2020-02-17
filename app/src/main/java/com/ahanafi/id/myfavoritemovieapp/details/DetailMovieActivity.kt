@@ -2,15 +2,22 @@ package com.ahanafi.id.myfavoritemovieapp.details
 
 import android.annotation.SuppressLint
 import android.content.ContentValues
-import androidx.appcompat.app.AppCompatActivity
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.ahanafi.id.myfavoritemovieapp.R
-import com.ahanafi.id.myfavoritemovieapp.adapters.MovieFavoriteAdapter
-import com.ahanafi.id.myfavoritemovieapp.database.DatabaseContract
+import com.ahanafi.id.myfavoritemovieapp.adapters.movie.MovieFavoriteAdapter
+import com.ahanafi.id.myfavoritemovieapp.database.DatabaseContract.MyMovieColumns.Companion.CONTENT_URI
+import com.ahanafi.id.myfavoritemovieapp.database.DatabaseContract.MyMovieColumns.Companion.LANGUAGE
+import com.ahanafi.id.myfavoritemovieapp.database.DatabaseContract.MyMovieColumns.Companion.OVERVIEW
+import com.ahanafi.id.myfavoritemovieapp.database.DatabaseContract.MyMovieColumns.Companion.POSTER_PATH
+import com.ahanafi.id.myfavoritemovieapp.database.DatabaseContract.MyMovieColumns.Companion.RELEASE_DATE
+import com.ahanafi.id.myfavoritemovieapp.database.DatabaseContract.MyMovieColumns.Companion.TITLE
+import com.ahanafi.id.myfavoritemovieapp.database.DatabaseContract.MyMovieColumns.Companion._ID
 import com.ahanafi.id.myfavoritemovieapp.helper.MovieHelper
 import com.ahanafi.id.myfavoritemovieapp.models.Movie
 import com.bumptech.glide.Glide
@@ -20,6 +27,7 @@ import java.util.*
 class DetailMovieActivity : AppCompatActivity(), View.OnClickListener {
     private lateinit var movieHelper : MovieHelper
     private lateinit var favoriteMovieAdapter : MovieFavoriteAdapter
+    private lateinit var uriWithId : Uri
     private var movieFavorite : Movie? = null
 
     companion object{
@@ -31,12 +39,12 @@ class DetailMovieActivity : AppCompatActivity(), View.OnClickListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detail)
 
-        favoriteMovieAdapter = MovieFavoriteAdapter()
-        movieHelper = MovieHelper.getInstance(applicationContext)
-        movieHelper.open()
+        favoriteMovieAdapter =
+            MovieFavoriteAdapter()
         movieFavorite = Movie()
 
         val movie = intent.getParcelableExtra(EXTRA_MOVIE_DATA) as Movie
+        uriWithId = Uri.parse(CONTENT_URI.toString() + "/" + movie.id)
 
         val tvTitle : TextView = findViewById(R.id.tv_title)
         val tvReleaseDate : TextView = findViewById(R.id.tv_release_date)
@@ -62,8 +70,8 @@ class DetailMovieActivity : AppCompatActivity(), View.OnClickListener {
         Glide.with(this).load(urlPoster).into(imgPoster)
 
         title = movie.title
-
-        if(movieHelper.checkIfExists(movie.id)) {
+        val data = contentResolver?.query(uriWithId, null, null, null, null)
+        if(data?.moveToFirst()!!) {
             showAddFavoriteButton(false)
             showFavoriteLabel(true)
         } else {
@@ -89,25 +97,23 @@ class DetailMovieActivity : AppCompatActivity(), View.OnClickListener {
         val posterPath = movie.posterPath
         val language = movie.language
 
-        if(!movieHelper.checkIfExists(id)) {
+        val data = contentResolver?.query(uriWithId, null, null, null, null)
+        if(! data?.moveToNext()!!) {
             val values = ContentValues()
-            values.put(DatabaseContract.MyMovieColumns._ID, id)
-            values.put(DatabaseContract.MyMovieColumns.TITLE, title)
-            values.put(DatabaseContract.MyMovieColumns.RELEASE_DATE, releaseDate)
-            values.put(DatabaseContract.MyMovieColumns.OVERVIEW, overview)
-            values.put(DatabaseContract.MyMovieColumns.LANGUAGE, language)
-            values.put(DatabaseContract.MyMovieColumns.POSTER_PATH, posterPath)
+            values.put(_ID, id)
+            values.put(TITLE, title)
+            values.put(RELEASE_DATE, releaseDate)
+            values.put(OVERVIEW, overview)
+            values.put(LANGUAGE, language)
+            values.put(POSTER_PATH, posterPath)
 
-            val result = movieHelper.insert(values)
+            contentResolver.insert(CONTENT_URI, values)
+            Toast.makeText(this, R.string.success_added_to_favorite, Toast.LENGTH_SHORT).show()
+            favoriteMovieAdapter.addItem(movie)
+            showFavoriteLabel(true)
+            showAddFavoriteButton(false)
 
-            if(result > 0) {
-                Toast.makeText(this, R.string.success_added_to_favorite, Toast.LENGTH_SHORT).show()
-                favoriteMovieAdapter.addItem(movie)
-                showFavoriteLabel(true)
-                showAddFavoriteButton(false)
-            } else {
-                Toast.makeText(this, R.string.failed_add_to_favorite, Toast.LENGTH_SHORT).show()
-            }
+
         } else {
             Toast.makeText(this, R.string.exist_movie_in_favorite, Toast.LENGTH_SHORT).show()
         }

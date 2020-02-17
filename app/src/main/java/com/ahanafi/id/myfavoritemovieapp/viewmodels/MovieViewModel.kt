@@ -4,13 +4,12 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.ahanafi.id.myfavoritemovieapp.BuildConfig
 import com.ahanafi.id.myfavoritemovieapp.models.Movie
 import com.loopj.android.http.AsyncHttpClient
 import com.loopj.android.http.AsyncHttpResponseHandler
 import cz.msebera.android.httpclient.Header
 import org.json.JSONObject
-import java.lang.Exception
-import com.ahanafi.id.myfavoritemovieapp.BuildConfig
 
 class MovieViewModel : ViewModel() {
     companion object {
@@ -32,8 +31,8 @@ class MovieViewModel : ViewModel() {
             ) {
                 try {
                     val result = String(responseBody)
-                    val responsObject = JSONObject(result)
-                    val listData = responsObject.getJSONArray("results")
+                    val responseObject = JSONObject(result)
+                    val listData = responseObject.getJSONArray("results")
                     for (i in 0 until listData.length()) {
                         val movieData = listData.getJSONObject(i)
                         val movie = Movie()
@@ -60,11 +59,11 @@ class MovieViewModel : ViewModel() {
 
             override fun onFailure(
                 statusCode: Int,
-                headers: Array<out Header>,
-                responseBody: ByteArray,
-                error: Throwable
+                headers: Array<out Header>?,
+                responseBody: ByteArray?,
+                error: Throwable?
             ) {
-                Log.d("onFailure", error.message.toString())
+                Log.d("onFailure", error?.message.toString())
             }
         })
     }

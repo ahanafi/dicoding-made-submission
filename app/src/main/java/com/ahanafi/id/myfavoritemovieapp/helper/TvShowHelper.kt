@@ -57,4 +57,20 @@ class TvShowHelper(context: Context) {
         val query = database.rawQuery("SELECT * FROM $DATABASE_TABLE WHERE $_ID = $id", null)
         return query.count > 0
     }
+
+    fun queryById(id: String): Cursor {
+        return database.query(
+            DATABASE_TABLE,
+            null,
+            "$_ID = ?",
+            arrayOf(id),
+            null,
+            null,
+            null,
+            null)
+    }
+
+    fun update(id: String, values: ContentValues?) : Int {
+        return database.update(DATABASE_TABLE, values, "$_ID = ?", arrayOf(id))
+    }
 }

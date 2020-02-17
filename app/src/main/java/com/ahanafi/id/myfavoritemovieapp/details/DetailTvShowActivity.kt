@@ -9,19 +9,17 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.ahanafi.id.myfavoritemovieapp.R
-import com.ahanafi.id.myfavoritemovieapp.adapters.TvShowFavoriteAdapter
+import com.ahanafi.id.myfavoritemovieapp.adapters.tvshow.TvShowFavoriteAdapter
 import com.ahanafi.id.myfavoritemovieapp.database.DatabaseContract.MyTvShowColumns.Companion.LANGUAGE
 import com.ahanafi.id.myfavoritemovieapp.database.DatabaseContract.MyTvShowColumns.Companion.OVERVIEW
 import com.ahanafi.id.myfavoritemovieapp.database.DatabaseContract.MyTvShowColumns.Companion.POSTER_PATH
 import com.ahanafi.id.myfavoritemovieapp.database.DatabaseContract.MyTvShowColumns.Companion.RELEASE_DATE
 import com.ahanafi.id.myfavoritemovieapp.database.DatabaseContract.MyTvShowColumns.Companion.TITLE
 import com.ahanafi.id.myfavoritemovieapp.database.DatabaseContract.MyTvShowColumns.Companion._ID
-import com.ahanafi.id.myfavoritemovieapp.fragments.MyFavoriteFragment
 import com.ahanafi.id.myfavoritemovieapp.helper.TvShowHelper
 import com.ahanafi.id.myfavoritemovieapp.models.TvShow
 import com.bumptech.glide.Glide
 import kotlinx.android.synthetic.main.activity_detail.*
-import kotlinx.android.synthetic.main.fragment_my_favorite.*
 import java.util.*
 
 class DetailTvShowActivity : AppCompatActivity(), View.OnClickListener {
@@ -38,7 +36,8 @@ class DetailTvShowActivity : AppCompatActivity(), View.OnClickListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detail)
 
-        favoriteTvShowAdapter = TvShowFavoriteAdapter()
+        favoriteTvShowAdapter =
+            TvShowFavoriteAdapter()
         tvShowHelper = TvShowHelper.getInstance(applicationContext)
         tvShowHelper.open()
         tvShowFavorite = TvShow()
@@ -90,6 +89,7 @@ class DetailTvShowActivity : AppCompatActivity(), View.OnClickListener {
 
     private fun addTvShowToFavorite() {
         val tvShow = intent.getParcelableExtra(EXTRA_TV_SHOW) as TvShow
+
         if(!tvShowHelper.checkIfExists(tvShow.id)) {
             val values = ContentValues()
             values.put(_ID, tvShow.id)
@@ -108,6 +108,11 @@ class DetailTvShowActivity : AppCompatActivity(), View.OnClickListener {
             } else {
                 Toast.makeText(this, R.string.failed_add_to_favorite, Toast.LENGTH_SHORT).show()
             }
+            /*val result = contentResolver.insert(CONTENT_URI, values)
+            Toast.makeText(this, R.string.success_added_to_favorite, Toast.LENGTH_SHORT).show()
+            favoriteTvShowAdapter.addItem(tvShow)
+            showFavoriteLabel(true)
+            showAddFavoriteButton(false)*/
         } else {
             Toast.makeText(this, R.string.exist_movie_in_favorite, Toast.LENGTH_SHORT).show()
         }

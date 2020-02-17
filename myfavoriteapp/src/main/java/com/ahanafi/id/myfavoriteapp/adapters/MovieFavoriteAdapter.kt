@@ -1,6 +1,7 @@
-package com.ahanafi.id.myfavoritemovieapp.adapters
+package com.ahanafi.id.myfavoriteapp.adapters
 
 import android.content.Intent
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,17 +10,15 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.afollestad.materialdialogs.MaterialDialog
-import com.ahanafi.id.myfavoritemovieapp.R
-import com.ahanafi.id.myfavoritemovieapp.details.DetailMovieActivity
-import com.ahanafi.id.myfavoritemovieapp.helper.MovieHelper
-import com.ahanafi.id.myfavoritemovieapp.models.Movie
+import com.ahanafi.id.myfavoriteapp.R
+import com.ahanafi.id.myfavoriteapp.database.DatabaseContract.MyMovieColumns.Companion.CONTENT_URI
+import com.ahanafi.id.myfavoriteapp.details.DetailMovieActivity
+import com.ahanafi.id.myfavoriteapp.models.Movie
 import com.bumptech.glide.Glide
 import kotlinx.android.synthetic.main.item_favorite_movie.view.*
-import kotlin.collections.ArrayList
 
 class MovieFavoriteAdapter : RecyclerView.Adapter<MovieFavoriteAdapter.MovieFavoriteViewHolder>() {
-
-    private lateinit var movieHelper : MovieHelper
+    private lateinit var uriWithId : Uri
 
     var listFavoriteMovies = ArrayList<Movie>()
     set(listFavoriteMovies) {
@@ -33,15 +32,6 @@ class MovieFavoriteAdapter : RecyclerView.Adapter<MovieFavoriteAdapter.MovieFavo
     inner class MovieFavoriteViewHolder(itemView : View) : RecyclerView.ViewHolder(itemView) {
         private val imgPoster : ImageView = itemView.findViewById(R.id.img_item_photo)
         private val tvTitle : TextView = itemView.findViewById(R.id.tv_item_name)
-
-        init {
-            itemView.setOnClickListener{
-                val movie = listFavoriteMovies[adapterPosition]
-                val detailMovieActivity = Intent(itemView.context, DetailMovieActivity::class.java)
-                detailMovieActivity.putExtra(DetailMovieActivity.EXTRA_MOVIE_DATA, movie)
-                itemView.context.startActivity(detailMovieActivity)
-            }
-        }
 
         internal fun bind(movie : Movie) {
             Glide.with(itemView).load(movie.posterPath).into(imgPoster)
@@ -59,25 +49,28 @@ class MovieFavoriteAdapter : RecyclerView.Adapter<MovieFavoriteAdapter.MovieFavo
     override fun onBindViewHolder(holder: MovieFavoriteViewHolder, position: Int) {
         val movie  = listFavoriteMovies[position]
         holder.bind(movie)
-        movieHelper = MovieHelper.getInstance(holder.itemView.context.applicationContext)
-        movieHelper.open()
         holder.itemView.btn_remove_movie.setOnClickListener{
            val dialog = MaterialDialog(holder.itemView.context)
                .title(R.string.confirm_delete)
                .message(R.string.confirm_delete_message)
                .positiveButton(R.string.yes){
-                   val result = movieHelper.deleteById(movie.id.toString()).toLong()
-                   if (result > 0) {
-                       removeItem(position)
-                       Toast.makeText(holder.itemView.context, R.string.success_deleted_movie, Toast.LENGTH_SHORT).show()
-                   } else {
-                       Toast.makeText(holder.itemView.context, R.string.failed_deleted_movie, Toast.LENGTH_SHORT).show()
-                   }
+                   val contentResolver = holder.itemView.context.contentResolver
+                   uriWithId = Uri.parse(CONTENT_URI.toString() + "/" + movie?.id)
+                   contentResolver.delete(uriWithId, null, null)
+                   removeItem(position)
+                   Toast.makeText(holder.itemView.context, R.string.success_deleted_movie, Toast.LENGTH_SHORT).show()
                }
                .negativeButton(R.string.cancel){ materialDialog ->
                    materialDialog.cancel()
                }
             dialog.show()
+        }
+
+        holder.itemView.setOnClickListener{
+            val movie = listFavoriteMovies[position]
+            val detailMovieActivity = Intent(holder.itemView.context, DetailMovieActivity::class.java)
+            detailMovieActivity.putExtra(DetailMovieActivity.EXTRA_MOVIE_DATA, movie)
+            holder.itemView.context.startActivity(detailMovieActivity)
         }
     }
 

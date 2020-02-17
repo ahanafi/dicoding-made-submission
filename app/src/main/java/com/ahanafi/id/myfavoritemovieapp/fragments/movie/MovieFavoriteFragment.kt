@@ -1,30 +1,29 @@
 package com.ahanafi.id.myfavoritemovieapp.fragments.movie
 
-
+import android.database.ContentObserver
 import android.os.Bundle
-import androidx.fragment.app.Fragment
+import android.os.Handler
+import android.os.HandlerThread
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ahanafi.id.myfavoritemovieapp.R
-import com.ahanafi.id.myfavoritemovieapp.adapters.MovieFavoriteAdapter
+import com.ahanafi.id.myfavoritemovieapp.adapters.movie.MovieFavoriteAdapter
+import com.ahanafi.id.myfavoritemovieapp.database.DatabaseContract.MyMovieColumns.Companion.CONTENT_URI
 import com.ahanafi.id.myfavoritemovieapp.helper.MappingHelper
-import com.ahanafi.id.myfavoritemovieapp.helper.MovieHelper
-import com.google.android.material.snackbar.Snackbar
-import kotlinx.android.synthetic.main.fragment_movie_favorite.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
-/**
- * A simple [Fragment] subclass.
- */
 class MovieFavoriteFragment : Fragment() {
     private lateinit var favoriteMovieAdapter : MovieFavoriteAdapter
-    private lateinit var movieHelper : MovieHelper
+    private lateinit var tvNothing : TextView
+    private lateinit var rvFavoriteMovie : RecyclerView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -36,41 +35,43 @@ class MovieFavoriteFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        tvNothing = view.findViewById(R.id.tv_nothing_movie)
+        rvFavoriteMovie = view.findViewById(R.id.rv_favorite_movie)
 
-        rv_favorite_movie.setHasFixedSize(true)
-        rv_favorite_movie.layoutManager = LinearLayoutManager(this.context, RecyclerView.HORIZONTAL, isInLayout)
-        favoriteMovieAdapter = MovieFavoriteAdapter()
-        rv_favorite_movie.adapter = favoriteMovieAdapter
+        rvFavoriteMovie.setHasFixedSize(true)
+        rvFavoriteMovie.layoutManager = LinearLayoutManager(this.context, RecyclerView.HORIZONTAL, isInLayout)
+        favoriteMovieAdapter =
+            MovieFavoriteAdapter()
+        rvFavoriteMovie.adapter = favoriteMovieAdapter
 
-        //Load Helper
-        movieHelper = MovieHelper.getInstance(activity!!.applicationContext)
-        movieHelper.open()
+        val handlerThread = HandlerThread("DataObserver")
+        handlerThread.start()
+        val handler = Handler(handlerThread.looper)
 
-        loadFavoriteMovies()
-
-        if (savedInstanceState == null) {
-            loadFavoriteMovies()
-        } else {
-            favoriteMovieAdapter = MovieFavoriteAdapter()
-            rv_favorite_movie.adapter = favoriteMovieAdapter
+        val myObserver = object : ContentObserver(handler){
+            override fun onChange(selfChange: Boolean) {
+                loadFavoriteMovies()
+            }
         }
+
+        activity?.contentResolver?.registerContentObserver(CONTENT_URI, true, myObserver)
+        loadFavoriteMovies()
     }
 
     private fun loadFavoriteMovies() {
         GlobalScope.launch(Dispatchers.Main){
-            progressbar_favorite_movie.visibility = View.VISIBLE
             val deferredMovie = async(Dispatchers.IO) {
-                val movieCursor = movieHelper.queryAll()
+                val movieCursor = activity?.contentResolver?.query(CONTENT_URI, null, null, null, null)
                 MappingHelper.mapMovieCursorToArrayList(movieCursor)
             }
             val movies = deferredMovie.await()
-            progressbar_favorite_movie.visibility = View.GONE
             if(movies.size > 0) {
+                tvNothing.visibility = View.GONE
                 favoriteMovieAdapter.listFavoriteMovies = movies
-                rv_favorite_movie.adapter = favoriteMovieAdapter
+                rvFavoriteMovie.adapter = favoriteMovieAdapter
             } else {
+                tvNothing.visibility = View.VISIBLE
                 favoriteMovieAdapter.listFavoriteMovies = ArrayList()
-                Snackbar.make(rv_favorite_movie, getString(R.string.no_favorite_movie), Snackbar.LENGTH_SHORT).show()
             }
         }
     }

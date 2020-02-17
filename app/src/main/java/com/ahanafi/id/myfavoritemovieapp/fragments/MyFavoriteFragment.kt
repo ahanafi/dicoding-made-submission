@@ -8,8 +8,8 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ahanafi.id.myfavoritemovieapp.R
-import com.ahanafi.id.myfavoritemovieapp.adapters.MovieFavoriteAdapter
-import com.ahanafi.id.myfavoritemovieapp.adapters.TvShowFavoriteAdapter
+import com.ahanafi.id.myfavoritemovieapp.adapters.movie.MovieFavoriteAdapter
+import com.ahanafi.id.myfavoritemovieapp.adapters.tvshow.TvShowFavoriteAdapter
 import com.ahanafi.id.myfavoritemovieapp.helper.MappingHelper
 import com.ahanafi.id.myfavoritemovieapp.helper.MovieHelper
 import com.ahanafi.id.myfavoritemovieapp.helper.TvShowHelper
@@ -50,8 +50,10 @@ class MyFavoriteFragment : Fragment() {
         rv_favorite_tv_show.layoutManager = LinearLayoutManager(this.activity, RecyclerView.HORIZONTAL, isInLayout)
 
         //Adapter
-        favoriteMovieAdapter = MovieFavoriteAdapter()
-        favoriteTvShowAdapter = TvShowFavoriteAdapter()
+        favoriteMovieAdapter =
+            MovieFavoriteAdapter()
+        favoriteTvShowAdapter =
+            TvShowFavoriteAdapter()
         rv_favorite_movie.adapter = favoriteMovieAdapter
         rv_favorite_tv_show.adapter = favoriteTvShowAdapter
 
@@ -68,8 +70,10 @@ class MyFavoriteFragment : Fragment() {
             loadFavoriteMovies()
             loadFavoriteTvSows()
         } else {
-            favoriteMovieAdapter = MovieFavoriteAdapter()
-            favoriteTvShowAdapter = TvShowFavoriteAdapter()
+            favoriteMovieAdapter =
+                MovieFavoriteAdapter()
+            favoriteTvShowAdapter =
+                TvShowFavoriteAdapter()
             rv_favorite_movie.adapter = favoriteMovieAdapter
             rv_favorite_tv_show.adapter = favoriteTvShowAdapter
         }

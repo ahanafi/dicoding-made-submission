@@ -1,4 +1,4 @@
-package com.ahanafi.id.myfavoritemovieapp.adapters
+package com.ahanafi.id.myfavoritemovieapp.adapters.tvshow
 
 import android.content.Intent
 import android.view.LayoutInflater
